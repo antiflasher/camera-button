@@ -15,8 +15,17 @@ class CameraButton: UIButton {
     private let activeColor = UIColor(red: 245/255, green: 107/255, blue: 99/255, alpha: 1)
     private let disabledColor = UIColor(red: 1, green: 1, blue: 1, alpha: 0.7)
     private let borderPadding = CGFloat(1)
+    private let borderWidth = CGFloat(2)
     private let knobPadding = CGFloat(5)
+    private let knobCornerRadius = CGFloat(8)
     private let recordingIndicatorPadding = CGFloat(-24)
+    private let recordingIndicatorMinScaleTransform = CATransform3DMakeScale(0.5, 0.5, 0.5)
+    private let recordingIndicator1MaxScaleTransform = CATransform3DMakeScale(1.0, 1.0, 1.0)
+    private let recordingIndicator2MaxScaleTransform = CATransform3DMakeScale(1.1, 1.1, 1.1)
+    private let knobMinScaleTransform = CATransform3DMakeScale(0.6, 0.6, 0.6)
+    private let knobMaxScaleTransform = CATransform3DMakeScale(1.2, 1.2, 1.2)
+    private let pulseAnimationTimingFunction = CAMediaTimingFunction(controlPoints: 0.3, 0.0, 0.1, 1.0)
+    private let pulseAnimationDuration = 1.0
     // Elements
     private var borderLayer = CALayer()
     private var knobLayer = CALayer()
@@ -41,7 +50,7 @@ class CameraButton: UIButton {
         // Set up Border Layer
         borderLayer.frame = CGRect(x: borderPadding, y: borderPadding, width: self.frame.width - borderPadding * 2 , height: self.frame.height - borderPadding * 2)
         borderLayer.cornerRadius = borderLayer.frame.width / 2
-        borderLayer.borderWidth = 2
+        borderLayer.borderWidth = borderWidth
         borderLayer.borderColor = borderColor.cgColor
         
         // Set up Knob Layer
@@ -62,8 +71,8 @@ class CameraButton: UIButton {
         recordingIndicatorLayer2.opacity = 0
         
         // Set them into initial position
-        recordingIndicatorLayer1.transform = CATransform3DMakeScale(0.5, 0.5, 0.5)
-        recordingIndicatorLayer2.transform = CATransform3DMakeScale(0.5, 0.5, 0.5)
+        recordingIndicatorLayer1.transform = recordingIndicatorMinScaleTransform
+        recordingIndicatorLayer2.transform = recordingIndicatorMinScaleTransform
     }
     
     @objc func touchBegan() {
@@ -82,8 +91,8 @@ class CameraButton: UIButton {
         didSet {
             if isSelected {
                 borderLayer.opacity = 0
-                knobLayer.transform = CATransform3DMakeScale(0.6, 0.6, 0.6)
-                knobLayer.cornerRadius = 8
+                knobLayer.transform = knobMinScaleTransform
+                knobLayer.cornerRadius = knobCornerRadius
                 knobLayer.backgroundColor = borderColor.cgColor
                 pulseRecordingIndicator()
             } else {
@@ -98,7 +107,7 @@ class CameraButton: UIButton {
         borderLayer.opacity = 0
         recordingIndicatorLayer1.opacity = 1
         recordingIndicatorLayer2.opacity = 1
-        knobLayer.transform = CATransform3DMakeScale(1.2, 1.2, 1.2)
+        knobLayer.transform = knobMaxScaleTransform
     }
     
     private func normalize() {
@@ -108,8 +117,8 @@ class CameraButton: UIButton {
         knobLayer.transform = CATransform3DMakeScale(1.0, 1.0, 1.0)
         recordingIndicatorLayer1.removeAllAnimations()
         recordingIndicatorLayer2.removeAllAnimations()
-        recordingIndicatorLayer1.transform = CATransform3DMakeScale(0.5, 0.5, 0.5)
-        recordingIndicatorLayer2.transform = CATransform3DMakeScale(0.5, 0.5, 0.5)
+        recordingIndicatorLayer1.transform = recordingIndicatorMinScaleTransform
+        recordingIndicatorLayer2.transform = recordingIndicatorMinScaleTransform
     }
 
     private func pulseRecordingIndicator() {
@@ -118,15 +127,15 @@ class CameraButton: UIButton {
             indicatorAnim.fillMode = .forwards
             indicatorAnim.autoreverses = true
             indicatorAnim.repeatCount = Float.greatestFiniteMagnitude
-            indicatorAnim.timingFunction = CAMediaTimingFunction(controlPoints: 0.3, 0.0, 0.1, 1.0)
-            indicatorAnim.duration = 1
-            indicatorAnim.fromValue = CATransform3DMakeScale(0.5, 0.5, 0.5)
-            indicatorAnim.toValue = CATransform3DMakeScale(1, 1, 1)
+            indicatorAnim.timingFunction = pulseAnimationTimingFunction
+            indicatorAnim.duration = pulseAnimationDuration
+            indicatorAnim.fromValue = recordingIndicatorMinScaleTransform
+            indicatorAnim.toValue = recordingIndicator1MaxScaleTransform
             recordingIndicatorLayer1.add(indicatorAnim, forKey: "scale")
             
             let indicator2Anim = indicatorAnim
-            indicator2Anim.toValue = CATransform3DMakeScale(1.1, 1.1, 1.1)
-            indicator2Anim.beginTime = CACurrentMediaTime() + 0.5
+            indicator2Anim.toValue = recordingIndicator2MaxScaleTransform
+            indicator2Anim.beginTime = CACurrentMediaTime() + pulseAnimationDuration / 2.0
             recordingIndicatorLayer2.add(indicator2Anim, forKey: "scale")
 
         }
