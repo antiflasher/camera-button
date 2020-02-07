@@ -1,4 +1,4 @@
-# Camera Button
+# CameraButton.swift
 
 ## Usage
 1. Drag the file into your project.
